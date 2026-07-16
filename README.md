@@ -40,7 +40,7 @@ Kentia Hall is intentionally excluded. Only rooms and halls used by the local sc
 
 ## GitHub Pages
 
-This Vite project uses `base: "./"` so the built app can be served from a project subpath. The included GitHub Actions workflow builds, tests, and publishes `dist/` to GitHub Pages on every push to `main`.
+This Vite project uses `base: "./"` so the built app can be served from a project subpath. Build with `npm run build` and publish the generated `dist/` folder to GitHub Pages, for example from a `gh-pages` branch.
 
 ## Known Limitations
 
