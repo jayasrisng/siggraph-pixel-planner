@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+node_modules/.tmp/
+vite.config.ts.timestamp-*.mjs
