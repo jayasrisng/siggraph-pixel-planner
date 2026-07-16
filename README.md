@@ -1,6 +1,6 @@
 # SIGGRAPH Pixel Planner
 
-Polished Vite + React + TypeScript attendee planner for SIGGRAPH 2026 at the Los Angeles Convention Center.
+Vite + React + TypeScript attendee planner for SIGGRAPH 2026 at the Los Angeles Convention Center.
 
 ## Setup
 
@@ -25,7 +25,7 @@ The app expects structured schedule data in `src/data/schedule.ts`. Every timed 
 id, title, program, day, date, start, end, room, floor, tags, sourceUrl
 ```
 
-The live SIGGRAPH schedule is linked at <https://s2026.conference-schedule.org/>. In this environment the schedule page presented a verification gate, so the checked-in dataset is labeled as seed/demo data and is not presented as official. Replace `seedScheduleItems` with official CSV/JSON-derived entries when an export is available.
+The live SIGGRAPH schedule is linked at <https://s2026.conference-schedule.org/>. The checked-in seed dataset is for planner development and should be replaced with official CSV/JSON-derived entries before any official use.
 
 Flexible all-day or drop-in items live in `stickyDropIns` and are intentionally excluded from overlap/conflict logic.
 
@@ -40,11 +40,7 @@ Kentia Hall is intentionally excluded. Only rooms and halls used by the local sc
 
 ## GitHub Pages
 
-This Vite project uses `base: "./"` so the built app can be served from a project subpath.
-
-1. Run `npm run build`.
-2. Publish the `dist/` folder with your preferred GitHub Pages workflow.
-3. For a common Actions setup, upload `dist/` as the Pages artifact after install/test/build.
+This Vite project uses `base: "./"` so the built app can be served from a project subpath. The included GitHub Actions workflow builds, tests, and publishes `dist/` to GitHub Pages on every push to `main`.
 
 ## Known Limitations
 
