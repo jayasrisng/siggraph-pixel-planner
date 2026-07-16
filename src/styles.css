@@ -1196,6 +1196,43 @@ h1 {
   border-radius: 16px;
 }
 
+.contentScopeTabs {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding: 0.3rem;
+  border: 2px solid rgba(30, 37, 40, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 246, 231, 0.72);
+}
+
+.contentScopeTabs button {
+  min-height: 2.45rem;
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.contentScopeTabs span {
+  margin-left: 0.35rem;
+  color: #8b6a54;
+  font-size: 0.75rem;
+}
+
+.contentScopeTabs .activeScopeTab {
+  background: #1e2528;
+  color: #fff6e7;
+}
+
+.contentScopeTabs .activeScopeTab span {
+  color: #f2c94c;
+}
+
 .searchBox,
 .toggle {
   display: flex;
@@ -2016,6 +2053,14 @@ footer a {
 }
 
 @media (max-width: 760px) {
+  .contentScopeTabs {
+    width: 100%;
+  }
+
+  .contentScopeTabs button {
+    padding: 0.35rem 0.4rem;
+  }
+
   .appShell {
     padding:
       max(0.65rem, env(safe-area-inset-top))
@@ -2673,6 +2718,18 @@ footer a {
   font-size: 0.68rem;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.programChip.eventChip {
+  background: #f8dacd;
+  color: #7a3f35;
+}
+
+.sessionBody h3 a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.16em;
 }
 
 .rowActions {

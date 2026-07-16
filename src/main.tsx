@@ -20,7 +20,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { conferenceDays, dataNotice, officialProgramUrl, scheduleItems, stickyDropIns } from "./data/schedule";
+import { conferenceDays, conferenceScheduleItems, dataNotice, officialProgramUrl, scheduleItems, stickyDropIns } from "./data/schedule";
 import { offsiteMarker, roomShapes } from "./data/venue";
 import { rooms3d } from "./data/venue3d";
 import { findDayRoute, roomCenter3d } from "./utils/route3d";
@@ -50,6 +50,7 @@ const registrationOptions: Array<{ value: RegistrationType; label: string; note:
 ];
 const allTags = Array.from(new Set(scheduleItems.flatMap((item) => item.tags))).sort();
 type DateScope = "all" | (typeof conferenceDays)[number]["date"];
+type ContentScope = "conference" | "events" | "all";
 const conferenceTabs: Array<{ day: string; date: DateScope; short: string }> = [
   { day: "Full conference", date: "all", short: "All" },
   ...conferenceDays.map((day) => ({ ...day, short: day.day.slice(0, 3) })),
@@ -116,6 +117,19 @@ const readRegistrationType = (): RegistrationType => {
 };
 
 const isRegistrationType = (value: string): value is RegistrationType => value === "experience" || value === "discover" || value === "full";
+
+const goatCounterCode = import.meta.env.VITE_GOATCOUNTER_CODE as string | undefined;
+
+const useGoatCounter = () => {
+  useEffect(() => {
+    if (!goatCounterCode || document.querySelector("script[data-goatcounter]")) return;
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://gc.zgo.at/count.js";
+    script.dataset.goatcounter = `https://${goatCounterCode}.goatcounter.com/count`;
+    document.body.appendChild(script);
+  }, []);
+};
 
 function PalmTree({ className = "" }: { className?: string }) {
   return (
@@ -438,6 +452,7 @@ function SessionCard({
   onHover: (room: string | null) => void;
   onDetails: () => void;
 }) {
+  const isSideEvent = item.kind === "side-event";
   return (
     <article
       id={`session-${item.id}`}
@@ -451,9 +466,17 @@ function SessionCard({
         <span>{item.end}</span>
       </div>
       <div className="sessionBody">
-        <h3 onClick={onDetails}>{item.title}</h3>
+        <h3 onClick={isSideEvent ? undefined : onDetails}>
+          {isSideEvent ? (
+            <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+              {item.title}
+            </a>
+          ) : (
+            item.title
+          )}
+        </h3>
         <p className="meta">
-          <span className="programChip">{item.program}</span>
+          <span className={`programChip ${isSideEvent ? "eventChip" : ""}`}>{item.program}</span>
           <MapPin size={12} /> {item.room}
           {item.floor === "offsite" && <em> (offsite)</em>}
         </p>
@@ -720,6 +743,8 @@ function PlanPanel({
   }, [analysis.alerts, selectedItems]);
   const alertCount = alertGroups.reduce((sum, group) => sum + group.messages.length, 0);
   const showPlanDates = new Set(selectedItems.map((item) => item.date)).size > 1;
+  const plannedSideEvents = selectedItems.filter((item) => item.kind === "side-event");
+  const plannedConferenceItems = selectedItems.filter((item) => item.kind !== "side-event");
 
   const downloadIcs = () => {
     const blob = new Blob([createIcs(selectedItems)], { type: "text/calendar;charset=utf-8" });
@@ -771,6 +796,8 @@ function PlanPanel({
     const recapItems = attendedItems.length ? attendedItems : sortByTime(selectedItems);
     if (!recapItems.length) return;
     const recapStats = analyzePlan(recapItems);
+    const recapSideEvents = recapItems.filter((item) => item.kind === "side-event").length;
+    const recapConferenceItems = recapItems.length - recapSideEvents;
 
     // The user's exact character, rasterized from the same SVG the app renders.
     const mascotIdle = await rasterizeMascot(avatar, "idle", 420);
@@ -1083,13 +1110,18 @@ function PlanPanel({
       ctx.font = "700 17px Arial";
       ctx.fillStyle = "#40545a";
       ctx.fillText(
-        `${recapItems.length} session${recapItems.length > 1 ? "s" : ""} | ${recapStats.floorChanges} floor changes | about ${recapStats.walkingMinutes} walk minutes`,
+        `${recapConferenceItems} session${recapConferenceItems === 1 ? "" : "s"} | ${recapSideEvents} event${recapSideEvents === 1 ? "" : "s"} | about ${recapStats.walkingMinutes} walk minutes`,
         316,
         288,
       );
+      if (recapSideEvents > 0) {
+        ctx.fillStyle = "#b56a4d";
+        ctx.font = "800 20px Arial";
+        ctx.fillText(`attended ${recapSideEvents} side event${recapSideEvents === 1 ? "" : "s"}!`, 316, 314);
+      }
       ctx.font = "italic 700 23px Georgia";
       ctx.fillStyle = "#b56a4d";
-      ctx.fillText(`"${funLine}"`, 316, 328);
+      ctx.fillText(`"${funLine}"`, 316, recapSideEvents > 0 ? 344 : 328);
       ctx.font = "700 14px Arial";
       ctx.fillStyle = "#9db6bd";
       ctx.fillText("made with SIGGRAPH Pixel Planner", 316, 366);
@@ -1196,7 +1228,8 @@ function PlanPanel({
       </div>
       <div className="planScheduleSection">
         <p className="planStats">
-          {selectedItems.length} sessions | {analysis.floorChanges} floor changes | about {analysis.walkingMinutes} walk minutes
+          {plannedConferenceItems.length} sessions
+          {plannedSideEvents.length > 0 ? ` | ${plannedSideEvents.length} events` : ""} | {analysis.floorChanges} floor changes | about {analysis.walkingMinutes} walk minutes
         </p>
         <div className="planList">
           {sortByTime(selectedItems).map((item, index) => (
@@ -1384,9 +1417,11 @@ function RouteModal({
 }
 
 function App() {
+  useGoatCounter();
   const [showIntro, setShowIntro] = useState(() => !new URLSearchParams(window.location.search).has("planner"));
   const [selectedDate, setSelectedDate] = useState<DateScope>(defaultDateScope);
   const [selectedMinutes, setSelectedMinutes] = useState(10 * 60);
+  const [contentScope, setContentScope] = useState<ContentScope>("conference");
   const [query, setQuery] = useState("");
   const [program, setProgram] = useState("All");
   const [floor, setFloor] = useState("All");
@@ -1439,7 +1474,13 @@ function App() {
   );
   const filtered = useMemo(
     () =>
-      filterSessions(scheduleItems, {
+      filterSessions(
+        scheduleItems.filter((item) => {
+          if (contentScope === "conference") return item.kind !== "side-event";
+          if (contentScope === "events") return item.kind === "side-event";
+          return true;
+        }),
+        {
         selectedDate,
         query,
         program,
@@ -1449,19 +1490,19 @@ function App() {
         selectedMinutes,
         registrationType,
       }),
-    [selectedDate, query, program, floor, tags, liveOnly, selectedMinutes, registrationType],
+    [contentScope, selectedDate, query, program, floor, tags, liveOnly, selectedMinutes, registrationType],
   );
   const scopedSelectedItems = useMemo(
     () => (selectedDate === "all" ? selectedItems : selectedItems.filter((item) => item.date === selectedDate)),
     [selectedDate, selectedItems],
   );
-  const daySessions = (selectedDate === "all" ? scheduleItems : scheduleItems.filter((item) => item.date === selectedDate)).filter(
+  const daySessions = (selectedDate === "all" ? conferenceScheduleItems : conferenceScheduleItems.filter((item) => item.date === selectedDate)).filter(
     (item) => canAccessProgram(registrationType, item.program),
   );
   const activeRooms = daySessions.filter((item) => isActiveAt(item, selectedMinutes));
   const activeByRoom = useMemo(() => {
     const map = new Map<string, ScheduleItem[]>();
-    scheduleItems
+    conferenceScheduleItems
       .filter(
         (item) =>
           (selectedDate === "all" || item.date === selectedDate) &&
@@ -1480,10 +1521,10 @@ function App() {
   );
   const nextPlanned = scopedSelectedItems.find((item) => parseMinutes(item.start) >= selectedMinutes);
   const usedRooms = new Set([
-    ...scheduleItems.filter((item) => canAccessProgram(registrationType, item.program)).map((item) => item.room),
+    ...conferenceScheduleItems.filter((item) => canAccessProgram(registrationType, item.program)).map((item) => item.room),
     ...stickyDropIns.map((item) => item.room),
   ]);
-  const posterItems = scheduleItems.filter((item) => canAccessProgram(registrationType, item.program) && /poster/i.test(`${item.program} ${item.title}`));
+  const posterItems = conferenceScheduleItems.filter((item) => canAccessProgram(registrationType, item.program) && /poster/i.test(`${item.program} ${item.title}`));
 
   const togglePlan = (id: string) => {
     setPlanIds((current) => (current.includes(id) ? current.filter((candidate) => candidate !== id) : [...current, id]));
@@ -1504,7 +1545,7 @@ function App() {
   };
   const handleRoomSelect = (roomId: string) => {
     setHighlightedRoom(roomId);
-    const target = filtered.find((item) => item.room === roomId) ?? scheduleItems.find((item) => item.room === roomId);
+    const target = filtered.find((item) => item.room === roomId) ?? conferenceScheduleItems.find((item) => item.room === roomId);
     if (target) document.getElementById(`session-${target.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
@@ -1624,6 +1665,26 @@ function App() {
             </div>
 
             <div className={`mobilePane mobilePaneSessions ${activeMobilePanel === "sessions" ? "activeMobilePane" : ""}`}>
+              <div className="contentScopeTabs" role="tablist" aria-label="Schedule list type">
+                {[
+                  ["conference", "Conference", conferenceScheduleItems.length],
+                  ["events", "Side events", scheduleItems.filter((item) => item.kind === "side-event").length],
+                  ["all", "All", scheduleItems.length],
+                ].map(([value, label, count]) => (
+                  <button
+                    key={value as string}
+                    className={contentScope === value ? "activeScopeTab" : ""}
+                    onClick={() => {
+                      setContentScope(value as ContentScope);
+                      if (value === "events") setSelectedDate("all");
+                    }}
+                    aria-pressed={contentScope === value}
+                  >
+                    {label as string}
+                    <span>{count as number}</span>
+                  </button>
+                ))}
+              </div>
               <section className="filters">
                 <label className="searchBox">
                   <Search size={17} />

@@ -42,8 +42,19 @@ Kentia Hall is intentionally excluded. Only rooms and halls used by the local sc
 
 This Vite project uses `base: "./"` so the built app can be served from a project subpath. Build with `npm run build` and publish the generated `dist/` folder to GitHub Pages, for example from a `gh-pages` branch.
 
+## Private Analytics
+
+GoatCounter is optional and disabled unless a site code is provided at build time:
+
+```bash
+VITE_GOATCOUNTER_CODE=your-code npm run build
+```
+
+That loads `https://gc.zgo.at/count.js` with `https://your-code.goatcounter.com/count`.
+
 ## Known Limitations
 
 - Official schedule entries are not bundled unless you import an official SIGGRAPH export.
+- Side events are imported from the local CSV lists and skip rows without a usable date/time.
 - Room geometry is exact-ish and optimized for planner interaction, not a CAD drawing.
 - Walking estimates are based on relative SVG room centers plus floor-change penalties.

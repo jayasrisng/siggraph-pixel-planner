@@ -1,5 +1,6 @@
 import type { ScheduleItem, StickyDropIn } from "../types";
 import officialSchedule from "./officialSchedule.json";
+import { sideEventItems } from "./sideEvents";
 
 export const officialProgramUrl = "https://s2026.conference-schedule.org/";
 
@@ -340,7 +341,8 @@ export const stickyDropIns: StickyDropIn[] = [
 // Defensive filter: drop scrape-failure rows (generic title, no real program metadata).
 export const officialScheduleItems = (officialSchedule as ScheduleItem[]).filter(
   (item) => item.program !== "Program" && !/^Official item \d+$/.test(item.title),
-);
-export const scheduleItems = officialScheduleItems.length > 0 ? officialScheduleItems : seedScheduleItems;
+).map((item) => ({ ...item, kind: "conference" as const }));
+export const conferenceScheduleItems = officialScheduleItems.length > 0 ? officialScheduleItems : seedScheduleItems.map((item) => ({ ...item, kind: "conference" as const }));
+export const scheduleItems = [...conferenceScheduleItems, ...sideEventItems];
 
 export const dataNotice = "Unofficial planner: search the program, compare room locations and walking time, preview your route, then mark attended sessions for a recap GIF.";

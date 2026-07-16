@@ -179,9 +179,11 @@ const experiencePrograms = new Set([
   "Poster",
   "Spatial Storytelling",
   "Stage Session",
+  "Side Event",
 ]);
 
 export const canAccessProgram = (registrationType: RegistrationType, program: string) => {
+  if (program === "Side Event") return true;
   if (registrationType === "full") return true;
   if (registrationType === "experience") return experiencePrograms.has(program);
   return discoverPrograms.has(program);

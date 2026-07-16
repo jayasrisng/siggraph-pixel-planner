@@ -4,6 +4,7 @@ export type ScheduleItem = {
   id: string;
   title: string;
   program: string;
+  kind?: "conference" | "side-event";
   day: string;
   date: string;
   start: string;
