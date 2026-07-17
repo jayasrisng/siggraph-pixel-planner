@@ -39,24 +39,6 @@ The planner includes a small side-event list from local CSV sources. These are s
 
 Rows without a usable date/time are skipped, because the app needs real time ranges for conflict checks, calendar export, and recap logic.
 
-## Privacy-Friendly Visit Counts
-
-The app supports GoatCounter for lightweight visit counting.
-
-It is disabled unless a GoatCounter code is provided at build time:
-
-```bash
-VITE_GOATCOUNTER_CODE=jayasri npm run build
-```
-
-That injects:
-
-```html
-<script data-goatcounter="https://jayasri.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
-```
-
-This gives approximate page views and visitor counts in GoatCounter. It is not an exact count of humans, because browsers, blockers, and multiple devices affect analytics.
-
 ## Tech Stack
 
 - React
@@ -97,29 +79,4 @@ The venue geometry is modeled from public Los Angeles Convention Center floor-pl
 
 The map is optimized for attendee planning, not for CAD-level precision. Walking estimates use relative room centers plus floor-change penalties.
 
-## Local Development
-
-```bash
-npm install
-npm run dev
-```
-
-Verify before publishing:
-
-```bash
-npm run test
-npm run build
-```
-
-Build with analytics enabled:
-
-```bash
-VITE_GOATCOUNTER_CODE=jayasri npm run build
-```
-
-## GitHub Pages
-
-This Vite project uses `base: "./"` so the built app can be served from a project subpath.
-
-Build the project, then publish the generated `dist/` folder to the `gh-pages` branch.
-
+PS: Pixel is official SIGGRAPH mascot
