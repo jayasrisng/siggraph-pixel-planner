@@ -2626,6 +2626,45 @@ footer a {
   overflow: hidden;
 }
 
+.sessionDateBlock {
+  margin-bottom: 0.95rem;
+  border: 2px solid rgba(43, 114, 145, 0.16);
+  border-radius: 18px;
+  background: rgba(229, 241, 244, 0.46);
+  overflow: hidden;
+}
+
+.sessionDateBlock > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.95rem;
+  color: #184f68;
+  font-weight: 950;
+  background: rgba(217, 237, 240, 0.72);
+  user-select: none;
+}
+
+.sessionDateBlock > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sessionDateBlock > summary::before {
+  content: "▸";
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+}
+
+.sessionDateBlock[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.sessionDateBody {
+  padding: 0.65rem 0.65rem 0.1rem;
+}
+
 .sessionBlock summary {
   cursor: pointer;
   list-style: none;

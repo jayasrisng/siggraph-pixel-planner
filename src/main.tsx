@@ -514,6 +514,11 @@ const timeBlocks: Array<{ id: string; label: string; test: (startMinutes: number
   { id: "evening", label: "Evening", test: (minutes) => minutes >= 17 * 60 },
 ];
 
+const dayLabelFor = (date: string, items: ScheduleItem[]) => {
+  const day = items.find((item) => item.date === date)?.day;
+  return `${day ? `${day} ` : ""}${date.slice(5).replace("-", "/")}`;
+};
+
 function SessionGroups({
   items,
   planIds,
@@ -532,31 +537,53 @@ function SessionGroups({
   onDetails: (item: ScheduleItem) => void;
 }) {
   const sorted = sortByTime(items);
+  const dates = [...new Set(sorted.map((item) => item.date))];
+  const renderTimeBlocks = (blockItemsSource: ScheduleItem[]) =>
+    timeBlocks.map((block) => {
+      const blockItems = blockItemsSource.filter((item) => block.test(parseMinutes(item.start)));
+      if (!blockItems.length) return null;
+      return (
+        <details key={block.id} className="sessionBlock" open>
+          <summary>
+            {block.label} <span className="blockCount">{blockItems.length}</span>
+          </summary>
+          {blockItems.map((item) => (
+            <SessionCard
+              key={item.id}
+              item={item}
+              selected={planIds.includes(item.id)}
+              attended={attendedIds.has(item.id)}
+              onTogglePlan={() => onTogglePlan(item.id)}
+              onToggleAttended={() => onToggleAttended(item.id)}
+              onHover={onHover}
+              onDetails={() => onDetails(item)}
+            />
+          ))}
+        </details>
+      );
+    });
+
+  if (dates.length > 1) {
+    return (
+      <>
+        {dates.map((date) => {
+          const dateItems = sorted.filter((item) => item.date === date);
+          return (
+            <details key={date} className="sessionDateBlock" open>
+              <summary>
+                {dayLabelFor(date, sorted)} <span className="blockCount">{dateItems.length}</span>
+              </summary>
+              <div className="sessionDateBody">{renderTimeBlocks(dateItems)}</div>
+            </details>
+          );
+        })}
+      </>
+    );
+  }
+
   return (
     <>
-      {timeBlocks.map((block) => {
-        const blockItems = sorted.filter((item) => block.test(parseMinutes(item.start)));
-        if (!blockItems.length) return null;
-        return (
-          <details key={block.id} className="sessionBlock" open>
-            <summary>
-              {block.label} <span className="blockCount">{blockItems.length}</span>
-            </summary>
-            {blockItems.map((item) => (
-              <SessionCard
-                key={item.id}
-                item={item}
-                selected={planIds.includes(item.id)}
-                attended={attendedIds.has(item.id)}
-                onTogglePlan={() => onTogglePlan(item.id)}
-                onToggleAttended={() => onToggleAttended(item.id)}
-                onHover={onHover}
-                onDetails={() => onDetails(item)}
-              />
-            ))}
-          </details>
-        );
-      })}
+      {renderTimeBlocks(sorted)}
     </>
   );
 }

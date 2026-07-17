@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { seedScheduleItems } from "../data/schedule";
 import { createIcs } from "./calendar";
 import { analyzePlan, canAccessProgram, filterSessions } from "./planner";
-import { formatMinutes, overlaps, parseMinutes } from "./time";
+import { formatMinutes, overlaps, parseMinutes, sortByTime } from "./time";
 
 describe("time helpers", () => {
   it("parses and formats minutes", () => {
@@ -14,6 +14,15 @@ describe("time helpers", () => {
     const a = seedScheduleItems.find((item) => item.id === "seed-mon-papers")!;
     const b = seedScheduleItems.find((item) => item.id === "seed-mon-course")!;
     expect(overlaps(a, b)).toBe(true);
+  });
+
+  it("sorts multi-day schedules by date before time", () => {
+    const sorted = sortByTime([
+      { date: "2026-07-21", start: "08:00", end: "09:00", id: "tue-early" },
+      { date: "2026-07-20", start: "18:00", end: "19:00", id: "mon-late" },
+      { date: "2026-07-20", start: "09:00", end: "10:00", id: "mon-early" },
+    ]);
+    expect(sorted.map((item) => item.id)).toEqual(["mon-early", "mon-late", "tue-early"]);
   });
 });
 
