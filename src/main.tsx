@@ -83,7 +83,7 @@ const mobilePanels: Array<{
   icon: LucideIcon;
 }> = [
   { id: "map", label: "Map", detail: "3D route", icon: MapPin },
-  { id: "sessions", label: "Live", detail: "active sessions", icon: Clock },
+  { id: "sessions", label: "Schedule", detail: "sessions", icon: Clock },
   { id: "schedule", label: "Plan", detail: "my schedule", icon: CalendarDays },
   { id: "avatar", label: "Pixel", detail: "avatar", icon: Sparkles },
 ];
